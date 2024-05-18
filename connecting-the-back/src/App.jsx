@@ -1,35 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import { useEffect, useState, useSyncExternalStore } from "react";
+import "./App.css";
+import { Link, Route, Routes } from "react-router-dom";
+import { HomePage } from "./components/HomePage";
+import { DetailPage } from "./components/DetailPage";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import { AddForm } from "./components/AddForm";
+import { UpdateForm } from "./components/UpdateForm";
+// uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("https://dummyjson.com/products");
+        const newProducts = res.data.products.map((element) => {
+          element._id = uuidv4();
+          return element;
+        });
+        console.log(newProducts);
+        setProducts(newProducts);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchProducts();
+  }, []);
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Connecting it all CRUD</h1>
+      <Link to="/create-product">Create a Product</Link>
+      <Routes>
+        <Route path="/" element={<HomePage products={products} />} />
+        <Route path="/something/:id" element={<DetailPage />} />
+        <Route path="/create-product" element={<AddForm />} />
+        <Route path="/update-product/:productId" element={<UpdateForm />} />
+        <Route path="*" element={<h2>404 Not Found</h2>} />
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
